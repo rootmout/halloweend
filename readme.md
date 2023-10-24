@@ -23,3 +23,13 @@ curl -sSL https://install.python-poetry.org | python3 -
 sudo apt-get install vim
 
 sudo apt-get install python3-dev python3-rpi.gpio
+
+scp project-h.service  rootmout@192.168.1.27:~/project-h/
+
+scp main.py rootmout@192.168.1.27:~/project-h/main.py
+
+sudo cp project-h.service /lib/systemd/system/
+
+sudo chmod 644 /lib/systemd/system/project-h.service
+
+sudo systemctl daemon-reload

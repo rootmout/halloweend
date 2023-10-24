@@ -1,0 +1,11 @@
+[Unit]
+Description=Project H Service
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/home/rootmout/.local/bin/poetry --directory /home/rootmout/project-h run python3 /home/rootmout/project-h/main.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

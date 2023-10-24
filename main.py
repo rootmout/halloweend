@@ -7,6 +7,8 @@
 from board import SCL, SDA
 import busio
 import time
+from datetime import datetime
+import random
 
 # Import the PCA9685 module.
 from adafruit_pca9685 import PCA9685
@@ -20,27 +22,78 @@ pca = PCA9685(i2c_bus)
 # Set the PWM frequency to 60hz.
 pca.frequency = 60
 
-# Set all channels to 20% duty cycle
-for channel in range(16):
-    pca.channels[channel].duty_cycle = 2048  # 20% of the full range
+# Define the start and end hours for daytime
+day_start_hour = 8  # 8:00 AM
+day_end_hour = 19  # 7:00 PM
+
+# # Set all channels to 20% duty cycle
+# for channel in range(16):
+#     pca.channels[channel].duty_cycle = 2048  # 20% of the full range
+
+brightnessHeight = 20
+transitionSpeed = 0.3
+nextBlink = [0] * 16
+turnOn = []
+turnOff = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+
+def turn_all_off(pca):
+    for ch in range(16):
+        pca.channels[ch].duty_cycle = 0  # All to 0%
 
 
-# Set the PWM duty cycle for channel zero to 50%. duty_cycle is 16 bits to match other PWM objects
-# but the PCA9685 will only actually give 12 bits of resolution.
+nextOnOffSession = 1
 while True:
-    for channel in range(16):
-        # Increase duty cycle to 20% over 3 seconds
+    time.sleep(0.1)
+    nextOnOffSession -= 1
+    if nextOnOffSession < 0:
+        nextOnOffSession = random.randint(3, 7) * 10
+        print("-----")
+        print("session duration: ", nextOnOffSession / 10, "sec")
 
-        #time.sleep(3)  # Wait for 3 seconds
+        # Get the current time
+        current_hour = time.localtime().tm_hour
 
-        # Decrease duty cycle to 0 over 1 second
-        for duty_cycle in range(4096, -1, -1000):
-            pca.channels[channel].duty_cycle = duty_cycle
-            time.sleep(0.1)  # Adjust this for the desired rate of change
+        is_daytime = day_start_hour <= current_hour < day_end_hour
 
-        # Increase back to 20% over 3 seconds
-        for duty_cycle in range(0, 4096, 1000):
-            pca.channels[channel].duty_cycle = duty_cycle
-            time.sleep(0.15)  # Adjust this for the desired rate of change
+        if is_daytime:
+            print("now: ", current_hour, "| is day time: all leds OFF")
+            turn_all_off(pca)
+            time.sleep(10)
+            continue
 
-        #time.sleep(3)  # Wait for 3 seconds
+        numberToTurnOn = random.randint(-3, 3)
+        print("nbr to turn ON: ", numberToTurnOn)
+        if numberToTurnOn > 0:
+            # Move x numbers from list one to list two
+            for _ in range(numberToTurnOn):
+                if turnOff:
+                    number = random.choice(turnOff)
+                    turnOff.remove(number)
+                    turnOn.append(number)
+                else:
+                    break
+        elif numberToTurnOn < 0:
+            # Move -x numbers from list two to list one
+            for _ in range(-numberToTurnOn):
+                if turnOn:
+                    number = random.choice(turnOn)
+                    turnOn.remove(number)
+                    turnOff.append(number)
+                else:
+                    break
+        print("Leds ON: ", turnOn)
+        print("Leds OFF: ", turnOff)
+
+    for _, channel in enumerate(turnOn):
+        nextBlink[channel] -= 1
+        brightness = brightnessHeight
+        if nextBlink[channel] < -5:
+            nextBlink[channel] = random.randint(7,17)*10
+        if nextBlink[channel] < 0:
+            brightness += nextBlink[channel] * 10
+        if brightness < 0:
+            brightness = 0
+        pca.channels[channel].duty_cycle = brightness * 600
+
+    for _, channel in enumerate(turnOff):
+        pca.channels[channel].duty_cycle = 0
