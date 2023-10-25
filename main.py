@@ -41,11 +41,11 @@ def turn_all_off(pca):
         pca.channels[ch].duty_cycle = 0  # All to 0%
 
 
-nextOnOffSession = 1
+nextOnOffSession = 0
 while True:
     time.sleep(0.1)
     nextOnOffSession -= 1
-    if nextOnOffSession < 0:
+    if nextOnOffSession <= 0:
         nextOnOffSession = random.randint(3, 7) * 10
         print("-----")
         print("session duration: ", nextOnOffSession / 10, "sec")
@@ -57,6 +57,7 @@ while True:
 
         if is_daytime:
             print("now: ", current_hour, "| is day time: all leds OFF")
+            nextOnOffSession = 0
             turn_all_off(pca)
             time.sleep(10)
             continue
