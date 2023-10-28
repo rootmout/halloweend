@@ -46,7 +46,7 @@ while True:
     time.sleep(0.1)
     nextOnOffSession -= 1
     if nextOnOffSession <= 0:
-        nextOnOffSession = random.randint(3, 7) * 10
+        nextOnOffSession = random.randint(2, 4) * 10
         print("-----")
         print("session duration: ", nextOnOffSession / 10, "sec")
 
@@ -89,7 +89,7 @@ while True:
         nextBlink[channel] -= 1
         brightness = brightnessHeight
         if nextBlink[channel] < -5:
-            nextBlink[channel] = random.randint(7,17)*10
+            nextBlink[channel] = random.randint(2,10)*10
         if nextBlink[channel] < 0:
             brightness += nextBlink[channel] * 10
         if brightness < 0:
