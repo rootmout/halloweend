@@ -1,0 +1,11 @@
+[Unit]
+Description=halloweend service
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/opt/poetry/bin/poetry --directory /opt/halloweend run python3 /opt/halloweend/main.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
